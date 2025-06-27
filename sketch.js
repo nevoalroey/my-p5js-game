@@ -5,7 +5,9 @@ function animateMovement(pawn, targetPos) {
     targetPos: targetPos,
     startTime: millis()
   };
-}let board;
+}
+
+let board;
 let whitePawn;
 let blackPawns = [];
 let isGameOver = false;
@@ -32,6 +34,10 @@ let pauseMenu = {
   buttons: []
 };
 
+// Add global board offset variables
+let boardOffsetX = 0;
+let boardOffsetY = 0;
+
 function setup() {
   // Create responsive canvas for mobile
   let canvasSize = min(windowWidth - 20, windowHeight - 100, 500);
@@ -40,6 +46,10 @@ function setup() {
   // Store canvas size for responsive calculations
   boardSize = canvasSize - 100; // Leave space for UI
   cellSize = boardSize / 8;
+  
+  // Center the board
+  boardOffsetX = (width - boardSize) / 2;
+  boardOffsetY = (height - boardSize) / 2;
   
   // Disable anti-aliasing for pixel art effect
   noSmooth();
@@ -58,18 +68,19 @@ function setup() {
   // Create UI buttons with responsive positioning
   replayButton = createButton('Replay');
   replayButton.mousePressed(restartGame);
-  replayButton.position(canvasSize - 80, canvasSize + 20);
+  replayButton.position(width - 100, height + 20);
   replayButton.hide();
   
   menuButton = createButton('⚙️');
   menuButton.mousePressed(togglePauseMenu);
-  menuButton.position(canvasSize - 35, 50);
+  menuButton.position(width - 60, 20);
   menuButton.style('background-color', '#333');
   menuButton.style('color', '#fff');
   menuButton.style('border', '2px solid #fff');
-  menuButton.style('padding', '8px 12px');
+  menuButton.style('padding', '12px 18px');
   menuButton.style('font-family', 'monospace');
-  menuButton.style('font-size', '16px');
+  menuButton.style('font-size', '24px');
+  menuButton.style('border-radius', '8px');
   
   gameStartTime = millis();
   gameState = "welcome";
@@ -80,8 +91,8 @@ let boardSize;
 let cellSize;
 
 function draw() {
-  // Pixel art background with black to white gradient
-  drawPixelBackground();
+  // Simple dark grey background
+  background(30);
   
   // Handle different game states
   if (gameState === "welcome") {
@@ -90,7 +101,8 @@ function draw() {
   }
   
   push();
-  translate(50, 50);
+  // Center the board
+  translate(boardOffsetX, boardOffsetY);
   
   board.display();
   
@@ -219,8 +231,8 @@ function mousePressed() {
     return;
   }
   
-  let adjustedX = mouseX - 50;
-  let adjustedY = mouseY - 50;
+  let adjustedX = mouseX - boardOffsetX;
+  let adjustedY = mouseY - boardOffsetY;
   
   let target = createVector(floor(adjustedX / cellSize), floor(adjustedY / cellSize));
   if (whitePawn.isValidMove(target)) {
@@ -432,8 +444,8 @@ function easeInOutCubic(t) {
 function createParticles(pos, col, count) {
   for (let i = 0; i < count; i++) {
     particles.push(new HalftoneParticle(
-      pos.x * 50 + 25 + random(-15, 15),
-      pos.y * 50 + 25 + random(-15, 15),
+      boardOffsetX + pos.x * cellSize + cellSize / 2 + random(-cellSize/3, cellSize/3),
+      boardOffsetY + pos.y * cellSize + cellSize / 2 + random(-cellSize/3, cellSize/3),
       col
     ));
   }
@@ -441,8 +453,8 @@ function createParticles(pos, col, count) {
 
 function createCaptureEffect(pos) {
   captureEffect = {
-    x: pos.x * 50 + 25,
-    y: pos.y * 50 + 25,
+    x: boardOffsetX + pos.x * cellSize + cellSize / 2,
+    y: boardOffsetY + pos.y * cellSize + cellSize / 2,
     startTime: millis(),
     duration: 500
   };
@@ -1157,8 +1169,8 @@ class Pawn {
     updateAnimations();
     
     let pos = this.displayPosition || this.position;
-    let x = floor(pos.x * cellSize + cellSize/2); // Use responsive cell size
-    let y = floor(pos.y * cellSize + cellSize/2);
+    let x = pos.x * cellSize + cellSize/2;
+    let y = pos.y * cellSize + cellSize/2;
     
     push();
     translate(x, y);
@@ -2354,11 +2366,12 @@ function windowResized() {
   resizeCanvas(canvasSize, canvasSize);
   boardSize = canvasSize - 100;
   cellSize = boardSize / 8;
-  // Reposition UI elements if needed
+  boardOffsetX = (width - boardSize) / 2;
+  boardOffsetY = (height - boardSize) / 2;
   if (typeof replayButton !== 'undefined' && replayButton.position) {
-    replayButton.position(canvasSize - 80, canvasSize + 20);
+    replayButton.position(width - 100, height + 20);
   }
   if (typeof menuButton !== 'undefined' && menuButton.position) {
-    menuButton.position(canvasSize - 35, 50);
+    menuButton.position(width - 60, 20);
   }
 }
