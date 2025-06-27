@@ -256,8 +256,10 @@ function mousePressed() {
 
 // Add touch support for mobile
 function touchStarted() {
-  mousePressed();
-  return false; // Prevent default touch behavior
+  if (typeof mousePressed === 'function') {
+    mousePressed();
+  }
+  return false; // Prevent default scrolling
 }
 
 function drawWelcomeScreen() {
@@ -2344,5 +2346,19 @@ class Pawn {
   moveTo(target) {
     this.position = target.copy();
     this.displayPosition = target.copy();
+  }
+}
+
+function windowResized() {
+  let canvasSize = min(windowWidth - 20, windowHeight - 100, 500);
+  resizeCanvas(canvasSize, canvasSize);
+  boardSize = canvasSize - 100;
+  cellSize = boardSize / 8;
+  // Reposition UI elements if needed
+  if (typeof replayButton !== 'undefined' && replayButton.position) {
+    replayButton.position(canvasSize - 80, canvasSize + 20);
+  }
+  if (typeof menuButton !== 'undefined' && menuButton.position) {
+    menuButton.position(canvasSize - 35, 50);
   }
 }
